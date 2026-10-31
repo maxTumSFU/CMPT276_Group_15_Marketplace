@@ -1,0 +1,2 @@
+#to not leak database passwords
+.env
