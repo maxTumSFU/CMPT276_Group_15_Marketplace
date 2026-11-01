@@ -1,0 +1,72 @@
+/* General page styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f5f9;
+    margin: 0;
+    padding: 40px 20px;
+}
+
+/* Form container */
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+}
+
+form {
+    background-color: white;
+    max-width: 500px;
+    margin: auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Labels */
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #444;
+}
+
+/* Input fields */
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+/* Description field */
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Create listing button */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4b55a1;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #384184;
+}
+
+/* Validation messages */
+span {
+    color: red;
+    font-size: 13px;
+}
