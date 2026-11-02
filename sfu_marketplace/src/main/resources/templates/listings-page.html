@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFU Marketplace</title>
+</head>
+<body>
+    <h1>SFU Marketplace</h1>
+    <a th:href="@{/listings/new}">
+        <button type="button">+ Create New Listing</button>
+    </a>
+
+    <section th:if="${!#lists.isEmpty(listings)}">
+
+        <h2 class="results-count"
+            th:text="'Listings (' + ${listings.size()} + ')'">
+            Listings (0)
+        </h2>
+
+        <div class="listing-grid">
+
+            <div class="listing-card"
+                 th:each="item : ${listings}">
+
+                <div class="card-content">
+
+                    <h2 class="listing-title"
+                        th:text="${item.title}">
+                        Listing title
+                    </h2>
+
+                    <h3 class="price"
+                       th:text="|$${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}|">
+                        $25.00
+                    </h3>
+
+                    <p class="card-category"
+                       th:text="${item.category}">
+                        Category
+                    </p>
+
+                    <a class="view-link"
+                       th:href="@{/listings/{id}(id=${item.listingId})}">
+                        View Details →
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section th:if="${#lists.isEmpty(listings)}"
+             class="empty-state">
+
+        <h2>No listings yet</h2>
+
+        <p>
+            There are no items listed right now.
+            Check back later for new finds!
+        </p>
+
+    </section>
+</body>
+</html>
