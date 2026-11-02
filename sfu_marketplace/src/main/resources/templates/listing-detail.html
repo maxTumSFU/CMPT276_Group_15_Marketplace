@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listing Details</title>
+</head>
+<body>
+
+    <section class="page-heading">
+
+        <h1 th:text="${listing.title}">
+            Listing title
+        </h1>
+
+        <h2 class="price"
+           th:text="|$${#numbers.formatDecimal(listing.price, 1, 'COMMA', 2, 'POINT')}|">
+            $25.00
+        </h2>
+
+    </section>
+
+    <section class="listing-details">
+
+        <p>
+            <strong>Category:</strong>
+            <span th:text="${listing.category}"></span>
+        </p>
+
+        <p>
+            <strong>Description:</strong>
+            <span th:text="${listing.description}"></span>
+        </p>
+
+        <p>
+            <strong>Condition:</strong>
+            <span th:text="${listing.condition}"></span>
+        </p>
+
+        <p>
+            <strong>Posted:</strong>
+            <span th:text="${listing.dateCreated != null
+                ? #temporals.format(listing.dateCreated, 'MMM dd, yyyy ''at'' h:mm a')
+                : 'Not available'}"></span>
+        </p>
+
+        <p>
+            <strong>Seller:</strong>
+            <span th:text="${listing.seller.username}"></span>
+        </p>
+
+    </section>
+
+    <a th:href="@{/listings}">← Back to Listings</a>
+
+</body>
+</html>
