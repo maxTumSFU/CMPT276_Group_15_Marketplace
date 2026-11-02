@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <h2>Registered Accounts</h2>
+
+
+    <table>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+    <tr th:each="account : ${accounts}">
+    <td th:text="${account.username}"></td>
+    <td th:text="${account.email}"></td>
+    <p th:if="${#lists.isEmpty(accounts)}">
+    No accounts have been registered yet.
+    </p>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
