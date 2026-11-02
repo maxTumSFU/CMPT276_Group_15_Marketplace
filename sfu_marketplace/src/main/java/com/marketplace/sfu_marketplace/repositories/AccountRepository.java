@@ -1,4 +1,5 @@
-package com.marketplace.sfu_marketplace.models;
+package com.marketplace.sfu_marketplace.repositories;
+import com.marketplace.sfu_marketplace.models.Account;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;

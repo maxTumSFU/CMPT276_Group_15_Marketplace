@@ -11,7 +11,7 @@ import com.marketplace.sfu_marketplace.models.Account;
 import java.util.List;
 import java.util.Map;
 
-import com.marketplace.sfu_marketplace.models.AccountRepository;
+import com.marketplace.sfu_marketplace.repositories.AccountRepository;
 import com.marketplace.sfu_marketplace.models.AccountRole;
 
 import jakarta.servlet.http.HttpServletRequest;
