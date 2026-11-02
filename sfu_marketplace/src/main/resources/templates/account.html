@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Marketplace - My Account</title>
+</head>
+<body>
+
+    <h1>Welcome to Marketplace!</h1>
+
+    <h2>Account Information</h2>
+
+    <p>
+        Account ID:
+        <span th:text="${account.accountId}"></span>
+    </p>
+
+    <p>
+        Username:
+        <span th:text="${account.username}"></span>
+    </p>
+
+    <p>
+        Email:
+        <span th:text="${account.email}"></span>
+    </p>
+
+    <p>
+        Role:
+        <span th:text="${account.role}"></span>
+    </p>
+
+    <br>
+
+    <!-- log out method -->
+    <form action="/logout" method="POST">
+        <button type="submit">Logout</button>
+    </form>
+
+</body>
+</html>
