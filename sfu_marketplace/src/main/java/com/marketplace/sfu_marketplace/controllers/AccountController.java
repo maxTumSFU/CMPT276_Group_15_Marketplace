@@ -112,7 +112,7 @@ public String login( @RequestParam Map<String, String> formData, Model model, Ht
 
         model.addAttribute("account", account);
 
-        return "redirect:/account";
+        return "redirect:/listings";
     }
 }
 
