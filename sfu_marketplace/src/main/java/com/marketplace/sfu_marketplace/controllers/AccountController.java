@@ -32,9 +32,17 @@ public class AccountController {
 
     //register page
     @GetMapping("/register")
-    public String showRegisterPage() {
-        return "register";
+    public String getRegister(HttpSession session) {
+
+    //already registered?
+    Account account = (Account) session.getAttribute("session_account");
+
+    if (account != null) {
+        return "redirect:/account";
     }
+
+    return "register";
+}
 
     @PostMapping("/register")
     public String register( @RequestParam String username, @RequestParam String email, @RequestParam String password) {
