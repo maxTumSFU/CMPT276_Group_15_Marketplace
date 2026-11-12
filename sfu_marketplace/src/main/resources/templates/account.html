@@ -3,34 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <title>Marketplace - My Account</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
 
-    <h1>Welcome to Marketplace!</h1>
+    <div class="account-container">
+        <h1>Welcome to Marketplace!</h1>
 
-    <h2>Account Information</h2>
+        <h2>Account Information</h2>
 
-    <p>
-        Account ID:
-        <span th:text="${account.accountId}"></span>
-    </p>
+        <p>
+            Account ID:
+            <span th:text="${account.accountId}"></span>
+        </p>
 
-    <p>
-        Username:
-        <span th:text="${account.username}"></span>
-    </p>
+        <p>
+            Username:
+            <span th:text="${account.username}"></span>
+        </p>
 
-    <p>
-        Email:
-        <span th:text="${account.email}"></span>
-    </p>
+        <p>
+            Email:
+            <span th:text="${account.email}"></span>
+        </p>
 
-    <p>
-        Role:
-        <span th:text="${account.role}"></span>
-    </p>
+        <p>
+            Role:
+            <span th:text="${account.role}"></span>
+        </p>
 
-    <br>
+        <br>
+    </div>
+
+    <div class="link">
+        <p>
+            <a href="/listings">Return to listings</a>
+        </p>
+    </div>
+
+    <!-- admin-only link to all accounts -->
+    <div class="link" th:if="${account.role.name() == 'ADMIN'}">
+        <p>
+            <a th:href="@{/admin}">View All Accounts</a>
+        </p>
+    </div>
 
     <!-- log out method -->
     <form action="/logout" method="POST">

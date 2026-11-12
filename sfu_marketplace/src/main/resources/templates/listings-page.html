@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <title>SFU Marketplace</title>
 </head>
 <body>
     <h1>SFU Marketplace</h1>
 
-    <a th:href="@{/login}">
-        <button type="button">Login</button>
-    </a>
-    <a th:href="@{/register}">
-        <button type="button">Register</button>
-    </a>
-    <a th:href="@{/listings/new}">
-        <button type="button">+ Create New Listing</button>
-    </a>
+    <div class="listing_page_button_container">
+        <a th:href="@{/login}">
+            <button type="button" class="small-button">Login</button>
+        </a>
+        <a th:href="@{/register}">
+            <button type="button" class="small-button">Register</button>
+        </a>
+        <a th:href="@{/listings/new}">
+            <button type="button" class="small-button">+ Create New Listing</button>
+        </a>
+    </div>
 
     <section th:if="${!#lists.isEmpty(listings)}">
 

@@ -61,6 +61,11 @@ button {
     cursor: pointer;
 }
 
+.small-button {
+    width: auto;
+    padding: 12px 20px;
+}
+
 button:hover {
     background-color: #384184;
 }
@@ -70,3 +75,46 @@ span {
     color: red;
     font-size: 13px;
 }
+
+/* link */
+.link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.account-container {
+    text-align: center;
+}
+
+.listing_details {
+    text-align: center;
+}
+
+.page_heading {
+    text-align: center;
+
+}
+
+.price-box {
+    display: inline-block;
+    background-color: white;
+    border: 2px solid #4b55a1;
+    border-radius: 10px;
+    padding: 5px 25px;
+    margin: 10px auto;
+}
+
+
+.listing_page_button_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* so that the listings buttons don't have a link underline */
+a:has(button) {
+    text-decoration: none;
+}
+
