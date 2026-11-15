@@ -51,6 +51,22 @@
 
     </section>
 
+    
+    <form th:if="${!isFavourite}"
+      th:action="@{/favourites/add/{id}(id=${listing.listingId})}"
+      method="post">
+
+    <button type="submit">♡ Save to Favourites</button>
+    </form>
+
+
+    <form th:if="${isFavourite}"
+      th:action="@{/favourites/remove/{id}(id=${listing.listingId})}"
+      method="post">
+
+    <button type="submit">♥ Remove Favourite</button>
+    </form>
+
     <a th:href="@{/listings}">← Back to Listings</a>
 
 </body>

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "accounts")
@@ -98,4 +100,23 @@ public class Account implements Serializable {
     public void removeListingId(int listingId) {
         listingIds.remove(Integer.valueOf(listingId));
     }
+
+    @ManyToMany
+    @JoinTable(
+        name = "favourites",
+        joinColumns = @JoinColumn(name= "account_id"),
+        inverseJoinColumns = @JoinColumn(name= "listing_id")
+    )
+    private Set<Listing> favourites = new HashSet<>();
+
+        public Set<Listing> getFavourites(){
+            return favourites;
+        }
+        public void addFavourite(Listing listing) {
+            favourites.add(listing);
+        }
+        public void removeFavourite(Listing listing) {
+            favourites.remove(listing);
+        }
+
 }
