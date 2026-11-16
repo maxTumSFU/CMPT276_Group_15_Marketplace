@@ -8,6 +8,8 @@ import com.marketplace.sfu_marketplace.repositories.ListingRepository;
 import com.marketplace.sfu_marketplace.models.ListingStatus;
 import org.springframework.ui.Model;
 import java.util.List;
+import com.marketplace.sfu_marketplace.models.Account;
+import jakarta.servlet.http.HttpSession;
 
 @Controller 
 public class ListingBrowseController {
@@ -27,15 +29,25 @@ public class ListingBrowseController {
     }
 
     // Shows a specific listing
-    @GetMapping("/listings/{id}")
-    public String showListing(@PathVariable("id") int id, Model model) {
-        Listing listing = listingRepo.findById(id).orElse(null);
+ @GetMapping("/listings/{id}")
+public String showListing(
+        @PathVariable("id") int id,
+        Model model,
+        HttpSession session) {
 
-        if (listing == null) {
-            return "redirect:/listings";
-        }
+    Listing listing = listingRepo.findById(id).orElse(null);
 
-        model.addAttribute("listing", listing);
-        return "listing-detail";
+    if (listing == null) {
+        return "redirect:/listings";
     }
+
+    // Gets the currently logged-in account, if there is one
+    Account sessionAccount =
+            (Account) session.getAttribute("session_account");
+
+    model.addAttribute("listing", listing);
+    model.addAttribute("sessionAccount", sessionAccount);
+
+    return "listing-detail";
+}
 }

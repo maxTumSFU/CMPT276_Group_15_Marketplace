@@ -1,3 +1,4 @@
+
 package com.marketplace.sfu_marketplace.models;
 
 import jakarta.persistence.*;
@@ -7,6 +8,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "listings")
@@ -43,6 +46,13 @@ public class Listing implements Serializable {
     @ManyToOne
     @JoinColumn(name = "seller_id", nullable = false)
     private Account seller;
+
+    // Stores photos in the order they were uploaded.
+@OneToMany(mappedBy = "listing",
+           cascade = CascadeType.ALL,
+           orphanRemoval = true)
+@OrderBy("photoId ASC")
+private List<ListingPhoto> photos = new ArrayList<>();
 
     public Listing() {
     }
@@ -132,5 +142,14 @@ public class Listing implements Serializable {
 
     public void setSeller(Account seller) {
         this.seller = seller;
+    }
+
+    // Returns all photos belonging to this listing.
+    public List<ListingPhoto> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(List<ListingPhoto> photos) {
+        this.photos = photos;
     }
 }

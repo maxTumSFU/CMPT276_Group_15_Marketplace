@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages Inbox</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <!-- Inbox heading -->
+    <section class="messages-heading">
+        <h1>Messages</h1>
+        <p>Your conversations with buyers and sellers.</p>
+    </section>
+
+    <!-- Main inbox container -->
+    <section class="messages-inbox">
+
+        <!-- Inbox title and total unread count -->
+        <div class="inbox-header">
+
+            <h2>
+                All Conversations
+
+                <span class="unread-badge"
+                      th:if="${unreadCount > 0}"
+                      th:text="${unreadCount}">
+                    0
+                </span>
+            </h2>
+
+            <p th:text="${#lists.size(latestMessages)} + ' conversations'">
+                0 conversations
+            </p>
+
+        </div>
+
+        <!-- Display when there are no conversations -->
+        <div class="empty-inbox"
+             th:if="${#lists.isEmpty(latestMessages)}">
+
+            <div class="empty-inbox-icon">
+                <span>&#9993;</span>
+            </div>
+
+            <h3>No messages yet</h3>
+
+            <p>
+                When you contact a seller or receive a message,
+                your conversations will appear here.
+            </p>
+
+            <a th:href="@{/listings}" class="browse-listings-button">
+                Browse Listings
+            </a>
+
+        </div>
+
+        <!-- Display all conversations -->
+        <div class="conversation-list"
+             th:if="${!#lists.isEmpty(latestMessages)}">
+
+            <a th:each="message : ${latestMessages}"
+               th:with="
+                   otherId=${message.sender.accountId == currentAccount.accountId
+                       ? message.receiver.accountId
+                       : message.sender.accountId},
+                   conversationKey=${message.listing.listingId + '-' + otherId}"
+               class="conversation-preview"
+               th:href="@{/messages/conversation/{listingId}/{otherId}(
+                   listingId=${message.listing.listingId},
+                   otherId=${otherId})}">
+
+                <!-- Conversation information -->
+                <div class="conversation-info">
+
+                    <!-- User avatar -->
+                    <div class="conversation-avatar">
+                        <span th:text="${message.sender.accountId == currentAccount.accountId
+                            ? message.receiver.username.substring(0,1).toUpperCase()
+                            : message.sender.username.substring(0,1).toUpperCase()}">
+                            U
+                        </span>
+                    </div>
+
+                    <div class="conversation-text">
+
+                        <div class="conversation-top-row">
+
+                            <!-- Other person's username -->
+                            <h3 th:classappend="${unreadConversationCounts[conversationKey] != null
+                                and unreadConversationCounts[conversationKey] > 0}
+                                ? ' unread-text' : ''"
+                                th:text="${message.sender.accountId == currentAccount.accountId
+                                    ? message.receiver.username
+                                    : message.sender.username}">
+                                Username
+                            </h3>
+
+                           <!-- Shows a badge when this conversation has unread messages -->
+                            <!-- Shows a badge when this conversation has unread messages -->
+<span class="new-message-badge"
+      th:if="${unreadConversationCounts.containsKey(conversationKey)}">
+    UNREAD
+</span>
+
+                            <!-- Message timestamp -->
+                            <small th:text="${message.sentAt != null
+                                ? #temporals.format(message.sentAt, 'MMM dd, h:mm a')
+                                : ''}">
+                                Message time
+                            </small>
+
+                        </div>
+
+                        <!-- Listing title -->
+                        <p class="conversation-listing"
+                           th:text="${message.listing.title}">
+                            Listing title
+                        </p>
+
+                        <!-- Latest message -->
+                        <p class="conversation-last-message"
+                           th:classappend="${unreadConversationCounts[conversationKey] != null
+                               and unreadConversationCounts[conversationKey] > 0}
+                               ? ' unread-text' : ''">
+
+                            <span th:if="${message.sender.accountId == currentAccount.accountId}">
+                                You:
+                            </span>
+
+                            <span th:text="${message.content}">
+                                Latest message
+                            </span>
+
+                        </p>
+
+                    </div>
+
+                    <span class="conversation-arrow">&#8250;</span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+    </section>
+
+    <!-- Back to listings -->
+    <div class="link">
+        <p>
+            <a th:href="@{/listings}">← Back to Listings</a>
+        </p>
+    </div>
+
+</body>
+</html>

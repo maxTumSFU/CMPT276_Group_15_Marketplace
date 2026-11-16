@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="chat-page">
+
+    <!-- Chat header -->
+    <section class="chat-header">
+
+        <div class="chat-user-info">
+
+            <div class="chat-avatar">
+                <span th:text="${#strings.substring(otherAccount.username, 0, 1).toUpperCase()}">
+                    U
+                </span>
+            </div>
+
+            <div>
+                <h2 th:text="${otherAccount.username}">
+                    Username
+                </h2>
+
+                <p>
+                    Conversation about:
+                    <strong th:text="${listing.title}">
+                        Listing title
+                    </strong>
+                </p>
+            </div>
+
+        </div>
+
+        <div class="chat-listing-price">
+            <span th:text="|$${#numbers.formatDecimal(listing.price, 1, 'COMMA', 2, 'POINT')}|">
+                $25.00
+            </span>
+        </div>
+
+    </section>
+
+    <!-- Conversation messages -->
+    <section class="chat-messages" id="chatMessages">
+
+        <!-- Empty conversation -->
+        <div class="chat-empty"
+             th:if="${#lists.isEmpty(messages)}">
+
+            <p>No messages yet.</p>
+            <span>Send a message to start the conversation!</span>
+
+        </div>
+
+        <!-- Display saved messages -->
+        <div th:each="message : ${messages}"
+             class="chat-message"
+             th:classappend="${message.sender.accountId == currentAccount.accountId}
+                ? ' sent-message' : ' received-message'">
+
+            <div class="message-bubble">
+
+                <p class="message-content"
+                   th:text="${message.content}">
+                    Message content
+                </p>
+
+                <small class="message-time"
+                       th:text="${message.sentAt != null
+                           ? #temporals.format(message.sentAt, 'MMM dd, h:mm a')
+                           : ''}">
+                    Message time
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Message input -->
+    <section class="chat-input-area">
+
+        <form th:action="@{/messages/send}"
+              method="post"
+              class="chat-input-form">
+
+            <input type="hidden"
+                   name="listingId"
+                   th:value="${listing.listingId}">
+
+            <input type="hidden"
+                   name="otherAccountId"
+                   th:value="${otherAccount.accountId}">
+
+            <textarea name="content"
+                      rows="1"
+                      maxlength="2000"
+                      placeholder="Write a message..."
+                      required></textarea>
+
+            <button type="submit" class="chat-send-button">
+                <span>Send</span>
+                <span>&#10148;</span>
+            </button>
+
+        </form>
+
+    </section>
+
+    <!-- Return to the listing being discussed -->
+    <div class="chat-back-link">
+
+        <a th:href="@{/listings/{id}(id=${listing.listingId})}">
+            ← Back to Listing
+        </a>
+
+    </div>
+
+    <!-- Automatically scroll to the latest message -->
+    <script>
+
+        const chatMessages =
+            document.getElementById("chatMessages");
+
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+    </script>
+
+</body>
+</html>
