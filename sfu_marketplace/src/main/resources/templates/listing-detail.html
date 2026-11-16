@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -8,6 +9,7 @@
 </head>
 <body>
 
+    <!-- Listing heading and price -->
     <section class="page_heading">
 
         <h1 th:text="${listing.title}">
@@ -16,13 +18,62 @@
 
         <div class="price-box">
             <h2 class="price"
-            th:text="|$${#numbers.formatDecimal(listing.price, 1, 'COMMA', 2, 'POINT')}|">
+                th:text="|$${#numbers.formatDecimal(listing.price, 1, 'COMMA', 2, 'POINT')}|">
                 $25.00
             </h2>
         </div>
 
     </section>
 
+    <!-- Display all photos uploaded for this listing -->
+    <section class="listing-photo-gallery"
+             th:if="${!#lists.isEmpty(listing.photos)}">
+
+        <img th:each="photo, photoStat : ${listing.photos}"
+             th:src="${photo.imagePath}"
+             th:alt="${listing.title}"
+             class="detail-listing-image"
+             th:data-photo-index="${photoStat.index}">
+
+    </section>
+
+    <!-- Display a message if the listing has no photos -->
+    <section class="listing-photo-gallery no-image"
+             th:if="${#lists.isEmpty(listing.photos)}">
+
+        <p>No photos available for this listing.</p>
+
+    </section>
+
+    <!-- Larger photo viewer -->
+    <div id="photoLightbox" class="photo-lightbox" hidden>
+
+        <button type="button" id="closeLightbox"
+                class="close-lightbox" aria-label="Close">
+            &times;
+        </button>
+
+        <button type="button" id="previousPhoto"
+                class="photo-navigation previous-photo"
+                aria-label="Previous photo">
+            &#10094;
+        </button>
+
+        <div class="lightbox-content">
+            <img id="lightboxImage" src="" alt="Listing photo">
+
+            <p id="photoCounter" class="photo-counter"></p>
+        </div>
+
+        <button type="button" id="nextPhoto"
+                class="photo-navigation next-photo"
+                aria-label="Next photo">
+            &#10095;
+        </button>
+
+    </div>
+
+    <!-- Listing information -->
     <section class="listing_details">
 
         <p>
@@ -54,12 +105,150 @@
 
     </section>
 
+    <!-- Show Message Seller to logged-in buyers who are not the seller -->
+    <div th:if="${sessionAccount != null
+            and sessionAccount.accountId != listing.seller.accountId}">
+
+        <a th:href="@{/messages/start/{id}(id=${listing.listingId})}"
+           class="message-seller-link">
+            Message Seller
+        </a>
+
+    </div>
+
+    <!-- Ask users to log in before messaging -->
+    <div th:if="${sessionAccount == null}">
+
+        <a th:href="@{/login}" class="message-seller-link">
+            Log in to message seller
+        </a>
+
+    </div>
+
+    <!-- Return to the listings page -->
     <div class="link">
         <p>
             <a th:href="@{/listings}">← Back to Listings</a>
         </p>
     </div>
 
+    <!-- Controls the larger photo viewer -->
+    <script>
+
+        // ========================================
+        // PHOTO VIEWER
+        // ========================================
+
+        const photos =
+            document.querySelectorAll(".detail-listing-image");
+
+        const lightbox =
+            document.getElementById("photoLightbox");
+
+        const lightboxImage =
+            document.getElementById("lightboxImage");
+
+        const photoCounter =
+            document.getElementById("photoCounter");
+
+        const closeButton =
+            document.getElementById("closeLightbox");
+
+        const previousButton =
+            document.getElementById("previousPhoto");
+
+        const nextButton =
+            document.getElementById("nextPhoto");
+
+        let currentPhotoIndex = 0;
+
+        // Opens the selected photo in the larger viewer.
+        function openPhoto(index) {
+
+            if (photos.length === 0) return;
+
+            currentPhotoIndex = index;
+            updatePhoto();
+            lightbox.hidden = false;
+        }
+
+        // Updates the displayed photo and photo counter.
+        function updatePhoto() {
+
+            lightboxImage.src = photos[currentPhotoIndex].src;
+            lightboxImage.alt = photos[currentPhotoIndex].alt;
+
+            photoCounter.textContent =
+                (currentPhotoIndex + 1) + " of " + photos.length;
+        }
+
+        // Displays the previous photo.
+        function showPreviousPhoto() {
+
+            currentPhotoIndex =
+                (currentPhotoIndex - 1 + photos.length) % photos.length;
+
+            updatePhoto();
+        }
+
+        // Displays the next photo.
+        function showNextPhoto() {
+
+            currentPhotoIndex =
+                (currentPhotoIndex + 1) % photos.length;
+
+            updatePhoto();
+        }
+
+        // Closes the larger photo viewer.
+        function closePhotoViewer() {
+            lightbox.hidden = true;
+        }
+
+        // Opens the viewer when a listing photo is clicked.
+        photos.forEach((photo, index) => {
+
+            photo.addEventListener("click", () => {
+                openPhoto(index);
+            });
+
+        });
+
+        previousButton.addEventListener("click", showPreviousPhoto);
+        nextButton.addEventListener("click", showNextPhoto);
+        closeButton.addEventListener("click", closePhotoViewer);
+
+        // Closes the viewer when clicking the dark background.
+        lightbox.addEventListener("click", (event) => {
+
+            if (event.target === lightbox) {
+                closePhotoViewer();
+            }
+
+        });
+
+        // Keyboard controls for the photo viewer.
+        document.addEventListener("keydown", (event) => {
+
+            if (lightbox.hidden) return;
+
+            if (event.key === "Escape") {
+
+                closePhotoViewer();
+
+            } else if (event.key === "ArrowLeft") {
+
+                showPreviousPhoto();
+
+            } else if (event.key === "ArrowRight") {
+
+                showNextPhoto();
+
+            }
+
+        });
+
+    </script>
 
 </body>
 </html>
