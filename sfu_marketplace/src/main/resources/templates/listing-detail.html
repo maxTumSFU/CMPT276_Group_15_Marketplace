@@ -100,7 +100,10 @@
 
         <p>
             <strong>Seller:</strong>
-            <span th:text="${listing.seller.username}"></span>
+
+            <a th:href="@{/reviews/{id}(id=${listing.seller.accountId})}"
+            th:text="${listing.seller.username}">
+            </a>
         </p>
 
     </section>
