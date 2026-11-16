@@ -51,10 +51,19 @@
               th:errors="*{condition}"></span>
         <br><br>
 
-        <label for="category">Category:</label>
-        <input type="text" id="category" th:field="*{category}" required>
+       <label for="category">Category:</label>
+
+        <select id="category" th:field="*{category}" required>
+            <option value="">Select a category</option>
+
+            <option th:each="cat : ${categories}"
+                    th:value="${cat.name()}"
+                    th:text="${cat.displayName}">
+            </option>
+        </select>
+
         <span th:if="${#fields.hasErrors('category')}"
-              th:errors="*{category}"></span>
+            th:errors="*{category}"></span>
         <br><br>
 
         <!-- Allows the seller to select up to 10 listing photos -->

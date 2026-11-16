@@ -11,6 +11,8 @@ import java.util.List;
 import com.marketplace.sfu_marketplace.models.Account;
 import com.marketplace.sfu_marketplace.repositories.AccountRepository;
 import jakarta.servlet.http.HttpSession;
+import com.marketplace.sfu_marketplace.models.Categories;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller 
 public class ListingBrowseController {
@@ -26,13 +28,35 @@ public class ListingBrowseController {
         this.accountRepo = accountRepo;
     }
 
-    // Shows the listings page
+    
+    // Shows available listings, optionally filtered by category
     @GetMapping("/listings")
-    public String getListings(Model model) {
-        List<Listing> listings = listingRepo.findByStatus(ListingStatus.AVAILABLE); // Shows only available listings
-        model.addAttribute("listings", listings);
-        return "listings-page";
-    }
+    public String getListings(
+            @RequestParam(name = "categories", required = false)
+            List<Categories> selectedCategories,
+            Model model) {
+
+        if (selectedCategories == null) {
+            selectedCategories = List.of();
+        }
+
+        List<Listing> listings;
+
+        if (selectedCategories.isEmpty()) {
+            listings = listingRepo.findByStatus(ListingStatus.AVAILABLE);
+        } else {
+            listings = listingRepo.findByStatusAndCategoryIn(
+                    ListingStatus.AVAILABLE,
+                    selectedCategories
+            );
+        }
+
+    model.addAttribute("listings", listings);
+    model.addAttribute("categories", Categories.values());
+    model.addAttribute("selectedCategories", selectedCategories);
+
+    return "listings-page";
+}
 
 
   

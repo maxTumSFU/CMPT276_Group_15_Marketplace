@@ -32,6 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.marketplace.sfu_marketplace.models.Categories;
+
 
 @Controller
 public class ListingController {
@@ -61,7 +63,10 @@ public class ListingController {
         this.messageRepository = messageRepository;
         this.cloudinary = cloudinary;
     }
-
+    @ModelAttribute("categories")
+    public Categories[] populateCategories() {
+    return Categories.values();
+}
     // Displays the create listing form
     @GetMapping("/listings/new")
     public String showCreateListingForm(
