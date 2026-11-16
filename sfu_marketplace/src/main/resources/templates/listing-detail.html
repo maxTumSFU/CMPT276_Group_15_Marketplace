@@ -269,6 +269,25 @@
 
     </script>
 
+    <!-- delete lsiting button -->
+    <form th:if="${sessionAccount != null and sessionAccount.role.name() == 'ADMIN'}"
+        th:action="@{/listings/{id}/delete(id=${listing.listingId})}"
+        method="post">
+
+        <button type="submit" >
+            Delete Listing
+        </button>
+    </form>
+
+    <form th:if="${sessionAccount != null and isOwner}"
+        th:action="@{/listings/{id}/delete(id=${listing.listingId})}"
+        method="post">
+
+        <button type="submit">
+            Delete My Listing
+        </button>
+    </form>
+
 
 </body>
 </html>
