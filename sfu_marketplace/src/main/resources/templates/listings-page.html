@@ -34,6 +34,13 @@
         <!-- Buttons shown when the user is logged in -->
         <div th:if="${session.session_account != null}">
 
+            <!-- Account page -->
+            <a th:href="@{/account}">
+                <button type="button" class="small-button">
+                    Account
+                </button>
+            </a>
+
             <!-- Messages inbox with unread notification count -->
             <a th:href="@{/messages}">
                 <button type="button" class="small-button">
