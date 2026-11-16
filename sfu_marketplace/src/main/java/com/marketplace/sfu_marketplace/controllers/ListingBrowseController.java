@@ -34,18 +34,22 @@ public class ListingBrowseController {
         return "listings-page";
     }
 
-   
+
+  
+    // Shows a specific listing
     @GetMapping("/listings/{id}")
     @Transactional(readOnly = true)
     public String showListing(
-        @PathVariable("id") int id,
-        Model model,
-        HttpSession session) {
+            @PathVariable("id") int id,
+            Model model,
+            HttpSession session) {
+
         Listing listing = listingRepo.findById(id).orElse(null);
 
         if (listing == null) {
             return "redirect:/listings";
         }
+
         boolean isFavourite = false;
 
         Account sessionAccount =
@@ -65,8 +69,9 @@ public class ListingBrowseController {
 
         model.addAttribute("isFavourite", isFavourite);
         model.addAttribute("listing", listing);
+        model.addAttribute("sessionAccount", sessionAccount);
+
         return "listing-detail";
     }
 
-    
 }

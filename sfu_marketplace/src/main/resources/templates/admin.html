@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
     <h1>Admin Dashboard</h1>
@@ -10,21 +11,34 @@
 
 
     <table>
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Email</th>
-        </tr>
-    </thead>
-    <tbody>
-    <tr th:each="account : ${accounts}">
-    <td th:text="${account.username}"></td>
-    <td th:text="${account.email}"></td>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="account : ${accounts}">
+                <td th:text="${account.username}"></td>
+                <td th:text="${account.email}"></td>
+            </tr>
+        </tbody>
+
     <p th:if="${#lists.isEmpty(accounts)}">
-    No accounts have been registered yet.
+        No accounts have been registered yet.
     </p>
-    </tr>
-    </tbody>
+
+    <div>
+        <p>
+            <a th:href="@{/account}">Return to account page</a>
+        </p>
+    </div>
+    <div>
+        <p>
+            <a th:href="@{/listings}">Return to listings</a>
+        </p>
+    </div>
+    
 </table>
 
 </body>
