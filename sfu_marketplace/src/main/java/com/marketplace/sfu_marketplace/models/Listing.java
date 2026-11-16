@@ -32,9 +32,9 @@ public class Listing implements Serializable {
     @Enumerated(EnumType.STRING)
     private ItemCondition condition;
 
-    @NotBlank(message = "Category is required")
-    private String category;
-
+    @NotNull(message = "Please select a category")
+    @Enumerated(EnumType.STRING)
+    private Categories category;
     // New listings are available by default
     @Enumerated(EnumType.STRING)
     private ListingStatus status = ListingStatus.AVAILABLE;
@@ -112,11 +112,11 @@ private List<ListingPhoto> photos = new ArrayList<>();
         this.condition = condition;
     }
 
-    public String getCategory() {
-        return category;
+   public Categories getCategory() {
+    return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Categories category) {
         this.category = category;
     }
 
