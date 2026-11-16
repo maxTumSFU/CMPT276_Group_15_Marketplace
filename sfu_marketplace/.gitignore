@@ -35,3 +35,6 @@ build/
 
 ### environment variables 
 .env
+
+# Ignore locally uploaded listing photos
+uploads/

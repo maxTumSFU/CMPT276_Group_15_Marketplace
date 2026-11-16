@@ -91,9 +91,9 @@
                 <div class="listing-card-image"
                      th:if="${!#lists.isEmpty(item.photos)}">
 
-                    <img th:src="@{${item.photos[0].imagePath}}"
-                         th:alt="${item.title}"
-                         class="listing-image">
+                    <img th:src="${item.photos[0].imagePath}"
+     th:alt="${item.title}"
+     class="listing-image">
 
                 </div>
 
