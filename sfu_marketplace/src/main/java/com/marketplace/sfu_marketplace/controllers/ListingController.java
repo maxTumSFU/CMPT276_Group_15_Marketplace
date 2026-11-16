@@ -2,23 +2,31 @@
 package com.marketplace.sfu_marketplace.controllers;
 
 import com.marketplace.sfu_marketplace.models.Account;
+import com.marketplace.sfu_marketplace.models.AccountRole;
 import com.marketplace.sfu_marketplace.models.Listing;
 import com.marketplace.sfu_marketplace.models.ListingPhoto;
 import com.marketplace.sfu_marketplace.repositories.AccountRepository;
 import com.marketplace.sfu_marketplace.repositories.ListingRepository;
+import com.marketplace.sfu_marketplace.repositories.MessageRepository;
 import com.marketplace.sfu_marketplace.repositories.ListingPhotoRepository;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import org.springframework.transaction.annotation.Transactional;
+import com.marketplace.sfu_marketplace.repositories.MessageRepository;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,6 +43,8 @@ public class ListingController {
     private final ListingRepository listingRepository;
     private final AccountRepository accountRepository;
     private final ListingPhotoRepository listingPhotoRepository;
+    private final MessageRepository messageRepository;
+    
 
     // Maximum number of photos allowed per listing
     private static final int MAX_PHOTOS = 10;
@@ -49,11 +59,13 @@ public class ListingController {
     public ListingController(
             ListingRepository listingRepository,
             AccountRepository accountRepository,
-            ListingPhotoRepository listingPhotoRepository) {
+            ListingPhotoRepository listingPhotoRepository,
+            MessageRepository messageRepository) {
 
         this.listingRepository = listingRepository;
         this.accountRepository = accountRepository;
         this.listingPhotoRepository = listingPhotoRepository;
+        this.messageRepository = messageRepository;
     }
 
     // Displays the create listing form
@@ -250,6 +262,57 @@ public class ListingController {
         }
     }
 
+    @Transactional 
+    @PostMapping("/listings/{id}/delete")
+    public String deleteListing( @PathVariable int id, HttpSession session) {
+
+        Account sessionAccount = (Account) session.getAttribute("session_account");
+
+        if (sessionAccount == null) {
+            return "redirect:/login";
+        }
+
+        //fetch account from the database
+        Account account = accountRepository.findById(sessionAccount.getAccountId()).orElse(null);
+
+        if (account == null) {
+            return "redirect:/login";
+        }
+
+        Listing listing = listingRepository.findById(id).orElse(null);
+
+        if (listing == null) {
+            return "redirect:/listings";
+        }
+
+        boolean isAdmin = account.getRole() == AccountRole.ADMIN;
+        boolean isOwner = account.getListingIds().contains(id);
+
+        if (!isAdmin && !isOwner) {
+            return "redirect:/listings";
+        }
+
+        //remove the listing ID from the owner's account - no ghost listings
+        List<Account> accounts = accountRepository.findAll();
+
+        for (Account a : accounts) {
+            if (a.getListingIds().contains(id)) {
+                a.removeListingId(id);
+                accountRepository.save(a);
+            }
+        }
+
+        // Delete all messages associated with this listing
+        messageRepository.deleteByListing_ListingId(id);
+
+        // Delete the listing
+        listingRepository.delete(listing);
+
+        return "redirect:/listings";
+    }
+
+
+
     // Deletes uploaded files if an error occurs
     private void deleteUploadedFiles(List<String> imagePaths) {
 
@@ -273,4 +336,6 @@ public class ListingController {
             }
         }
     }
+
+
 }

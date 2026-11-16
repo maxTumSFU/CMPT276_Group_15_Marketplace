@@ -67,6 +67,17 @@ public class ListingBrowseController {
             }
         }
 
+        boolean isOwner = false;
+
+        if (sessionAccount != null) {
+            Account account = accountRepo.findById(sessionAccount.getAccountId()).orElse(null);
+
+            if (account != null) {
+                isOwner = account.getListingIds().contains(id);
+            }
+        }
+
+        model.addAttribute("isOwner", isOwner);
         model.addAttribute("isFavourite", isFavourite);
         model.addAttribute("listing", listing);
         model.addAttribute("sessionAccount", sessionAccount);
