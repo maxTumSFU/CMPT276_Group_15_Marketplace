@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favorites</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <h1>My Favorites</h1>
+
+    <div class="link">
+        <a th:href="@{/account}">Back to My Account</a>
+        |
+        <a th:href="@{/listings}">Browse Listings</a>
+    </div>
+
+    <section th:if="${!#lists.isEmpty(listings)}">
+        <h2 class="results-count"
+            th:text="|Saved listings (${listings.size()})|">
+        </h2>
+
+        <div class="listing-grid">
+            <div class="listing-card" th:each="item : ${listings}">
+                <div class="card-content">
+                    <h2 class="listing-title"
+                        th:text="${item.title}">
+                    </h2>
+
+                    <h3 class="price"
+                        th:text="|$${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}|">
+                    </h3>
+
+                    <p th:text="${item.description}"></p>
+
+                    <a class="view-link"
+                       th:href="@{/listings/{id}(id=${item.listingId})}">
+                        View Details →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="empty-state"
+             th:if="${#lists.isEmpty(listings)}">
+        <h2>No favorites yet</h2>
+        <p>Save listings you like, and they will appear here.</p>
+        <a th:href="@{/listings}">Browse Listings</a>
+    </section>
+
+</body>
+</html>
