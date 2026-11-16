@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Reviews</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+    <!-- Seller heading -->
+    <h1 th:text="'Reviews for ' + ${seller.username}">
+        Seller Reviews
+    </h1>
+
+    <!-- Average rating (only shown if reviews exist) -->
+    <section class="listing_details"
+             th:if="${!#lists.isEmpty(reviews)}">
+
+        <div class="price-box">
+
+            <h2>Average Rating</h2>
+
+            <h2 th:text="${#numbers.formatDecimal(averageRating, 1, 2)} + '/5'">
+                0.00/5
+            </h2>
+
+            <p th:text="'Based on ' + ${reviews.size()} + ' reviews'">
+                Based on 0 reviews
+            </p>
+
+        </div>
+
+    </section>
+
+    <!-- Existing reviews -->
+    <section class="listing_details">
+
+        <h2>Customer Reviews</h2>
+
+        <!-- No reviews -->
+        <div th:if="${#lists.isEmpty(reviews)}">
+
+            <p>This seller has no reviews yet.</p>
+
+        </div>
+
+        <!-- Display each review -->
+        <div th:each="item : ${reviews}">
+
+            <hr>
+
+            <h3 th:text="${item.rater.username}">
+                Reviewer
+            </h3>
+
+            <p>
+                <strong>Rating:</strong>
+
+                <span th:text="${item.rating} + '/5'">
+                    5/5
+                </span>
+            </p>
+
+            <p th:if="${item.comment != null and !#strings.isEmpty(item.comment)}"
+               th:text="${item.comment}">
+                Review comment
+            </p>
+
+            <p th:if="${item.comment == null or #strings.isEmpty(item.comment)}">
+                No comment provided.
+            </p>
+
+            <p>
+                <small
+                    th:text="${item.dateCreated != null
+                    ? #temporals.format(item.dateCreated, 'MMM dd, yyyy')
+                    : 'Date unavailable'}">
+                </small>
+            </p>
+
+            <hr>
+
+        </div>
+
+    </section>
+
+    <!-- Leave a review -->
+    <section th:if="${account != null
+        and account.accountId != seller.accountId
+        and !alreadyReviewed}">
+
+        <h2>Leave a Review</h2>
+
+        <form th:action="@{/reviews/{id}(id=${seller.accountId})}"
+              th:object="${review}"
+              method="post">
+
+            <label for="rating">
+                Rating:
+            </label>
+
+            <select id="rating"
+                    th:field="*{rating}"
+                    required>
+
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+
+            </select>
+
+            <p th:if="${#fields.hasErrors('rating')}"
+               th:errors="*{rating}">
+            </p>
+
+
+            <label for="comment">
+                Comment:
+            </label>
+
+            <textarea id="comment"
+                      th:field="*{comment}"
+                      maxlength="1000"
+                      placeholder="Write your review here...">
+            </textarea>
+
+            <p th:if="${#fields.hasErrors('comment')}"
+               th:errors="*{comment}">
+            </p>
+
+
+            <button type="submit">
+                Submit Review
+            </button>
+
+        </form>
+
+    </section>
+
+    <!-- Already reviewed -->
+    <section th:if="${alreadyReviewed}" class="listing_details">
+
+        <p>You have already reviewed this seller.</p>
+
+    </section>
+
+    <!-- Viewing own reviews -->
+    <section th:if="${account != null and account.accountId == seller.accountId}" class="listing_details">
+
+        <p>You cannot review your own account.</p>
+
+    </section>
+
+    <!-- Not logged in -->
+    <section th:if="${account == null}" class="listing_details">
+
+        <p>
+            <a th:href="@{/login}">Login</a>
+            to leave a review.
+        </p>
+
+    </section>
+
+    <!-- Back button -->
+    <div class="link">
+        <p>
+            <a th:href="@{/listings}">
+                ← Back to Listings
+            </a>
+        </p>
+
+    </div>
+
+</body>
+</html>
