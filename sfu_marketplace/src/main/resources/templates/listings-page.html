@@ -34,6 +34,13 @@
         <!-- Buttons shown when the user is logged in -->
         <div th:if="${session.session_account != null}">
 
+            <!-- Account page -->
+            <a th:href="@{/account}">
+                <button type="button" class="small-button">
+                    Account
+                </button>
+            </a>
+
             <!-- Messages inbox with unread notification count -->
             <a th:href="@{/messages}">
                 <button type="button" class="small-button">
@@ -66,6 +73,33 @@
         </a>
 
     </div>
+    
+        <!-- Filter listings by category -->
+<form th:action="@{/listings}" method="get" class="category-filters">
+    <details class="category-dropdown">
+        <summary>
+            Categories
+            <span th:if="${!#lists.isEmpty(selectedCategories)}"
+                  th:text="|(${selectedCategories.size()} selected)|">
+            </span>
+        </summary>
+
+        <div class="category-dropdown-menu">
+            <label th:each="cat : ${categories}"
+                   class="category-option">
+                <input type="checkbox"
+                       name="categories"
+                       th:value="${cat.name()}"
+                       th:checked="${#lists.contains(selectedCategories, cat)}">
+
+                <span th:text="${cat.displayName}">Category</span>
+            </label>
+
+            <button type="submit">Apply filters</button>
+            <a th:href="@{/listings}">Clear filters</a>
+        </div>
+    </details>
+</form>
 
     <!-- Display available listings -->
     <section th:if="${!#lists.isEmpty(listings)}">
@@ -84,9 +118,9 @@
                 <div class="listing-card-image"
                      th:if="${!#lists.isEmpty(item.photos)}">
 
-                    <img th:src="@{${item.photos[0].imagePath}}"
-                         th:alt="${item.title}"
-                         class="listing-image">
+                    <img th:src="${item.photos[0].imagePath}"
+     th:alt="${item.title}"
+     class="listing-image">
 
                 </div>
 
@@ -110,8 +144,7 @@
                         $25.00
                     </h3>
 
-                    <p class="card-category"
-                       th:text="${item.category}">
+                   <p class="card-category" th:text="${item.category.displayName}">
                         Category
                     </p>
 

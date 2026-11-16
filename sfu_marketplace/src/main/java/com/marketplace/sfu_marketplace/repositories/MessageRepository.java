@@ -15,6 +15,8 @@ import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Message, Integer> {
 
+    void deleteByListing_ListingId(int listingId);
+
     // Finds all messages between two accounts about one specific listing.
     @Query("""
         SELECT m FROM Message m

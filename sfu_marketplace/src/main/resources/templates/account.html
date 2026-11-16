@@ -35,15 +35,21 @@
         <br>
     </div>
 
-<div class="link">
-    <a th:href="@{/messages}">
-        Messages
-        <span class="unread-badge"
-              th:if="${unreadCount > 0}"
-              th:text="${unreadCount}">
-        </span>
-    </a>
-</div>
+    <div class="link">
+        <a th:href="@{/messages}">
+            Messages
+            <span class="unread-badge"
+                th:if="${unreadCount > 0}"
+                th:text="${unreadCount}">
+            </span>
+        </a>
+    </div>
+
+    <div class="link">
+        <a th:href="@{/listings}">
+            Back to listings
+        </a>
+    </div>
 
     <!-- admin-only link to all accounts -->
     <div class="link" th:if="${account.role.name() == 'ADMIN'}">

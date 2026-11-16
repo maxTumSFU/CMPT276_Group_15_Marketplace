@@ -1,12 +1,18 @@
 
 package com.marketplace.sfu_marketplace.controllers;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+
 import com.marketplace.sfu_marketplace.models.Account;
+import com.marketplace.sfu_marketplace.models.AccountRole;
 import com.marketplace.sfu_marketplace.models.Listing;
 import com.marketplace.sfu_marketplace.models.ListingPhoto;
+
 import com.marketplace.sfu_marketplace.repositories.AccountRepository;
 import com.marketplace.sfu_marketplace.repositories.ListingRepository;
 import com.marketplace.sfu_marketplace.repositories.ListingPhotoRepository;
+import com.marketplace.sfu_marketplace.repositories.MessageRepository;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -17,17 +23,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
+import com.marketplace.sfu_marketplace.models.Categories;
+
 
 @Controller
 public class ListingController {
@@ -35,27 +41,32 @@ public class ListingController {
     private final ListingRepository listingRepository;
     private final AccountRepository accountRepository;
     private final ListingPhotoRepository listingPhotoRepository;
+    private final MessageRepository messageRepository;
+    private final Cloudinary cloudinary;
 
-    // Maximum number of photos allowed per listing
+    // Maximum number of photos is 10/listing
     private static final int MAX_PHOTOS = 10;
 
-    // Maximum size allowed for each photo (5 MB)
+    // Maximum size allowed for each photo is 5MB
     private static final long MAX_PHOTO_SIZE = 5 * 1024 * 1024;
 
-    // Folder where uploaded photos are stored
-    private static final String UPLOAD_DIRECTORY = "uploads/listings";
-
-    // Constructor for the required repositories
     public ListingController(
             ListingRepository listingRepository,
             AccountRepository accountRepository,
-            ListingPhotoRepository listingPhotoRepository) {
+            ListingPhotoRepository listingPhotoRepository,
+            MessageRepository messageRepository,
+            Cloudinary cloudinary) {
 
         this.listingRepository = listingRepository;
         this.accountRepository = accountRepository;
         this.listingPhotoRepository = listingPhotoRepository;
+        this.messageRepository = messageRepository;
+        this.cloudinary = cloudinary;
     }
-
+    @ModelAttribute("categories")
+    public Categories[] populateCategories() {
+    return Categories.values();
+}
     // Displays the create listing form
     @GetMapping("/listings/new")
     public String showCreateListingForm(
@@ -95,7 +106,6 @@ public class ListingController {
             return "redirect:/login";
         }
 
-        // Check for listing validation errors
         if (result.hasErrors()) {
             System.out.println("LISTING VALIDATION FAILED:");
 
@@ -107,7 +117,7 @@ public class ListingController {
 
         System.out.println("LISTING VALIDATION PASSED");
 
-        // Retrieve the seller's account from the database
+    
         Account account = accountRepository.findById(
                 sessionAccount.getAccountId()).orElse(null);
 
@@ -130,74 +140,70 @@ public class ListingController {
 
         System.out.println("NUMBER OF PHOTOS: " + selectedPhotos.size());
 
-        // Check the maximum number of photos
+        // Check the max number of photos
         if (selectedPhotos.size() > MAX_PHOTOS) {
             model.addAttribute("photoError",
                     "You can upload a maximum of 10 photos.");
             return "create-listing";
         }
 
-        // Store uploaded photo paths
         List<String> savedImagePaths = new ArrayList<>();
+        List<String> uploadedPublicIds = new ArrayList<>();
 
         try {
-            // Create the upload folder if it does not exist
-            Path uploadPath = Paths.get(UPLOAD_DIRECTORY)
-                    .toAbsolutePath()
-                    .normalize();
-
-            Files.createDirectories(uploadPath);
-
-            // Validate and save each selected photo
+            // Validate and upload each selected photo
             for (MultipartFile photo : selectedPhotos) {
 
                 String contentType = photo.getContentType();
-                String extension;
 
                 // Allow JPG, PNG, and WebP files
-                if ("image/jpeg".equals(contentType)) {
-                    extension = ".jpg";
-                } else if ("image/png".equals(contentType)) {
-                    extension = ".png";
-                } else if ("image/webp".equals(contentType)) {
-                    extension = ".webp";
-                } else {
+                if (!"image/jpeg".equals(contentType)
+                        && !"image/png".equals(contentType)
+                        && !"image/webp".equals(contentType)) {
+
                     model.addAttribute("photoError",
                             "Only JPG, PNG, and WebP photos are allowed.");
 
-                    deleteUploadedFiles(savedImagePaths);
+                    deleteCloudinaryImages(uploadedPublicIds);
                     return "create-listing";
                 }
 
-                // Check the maximum size of each photo
+                // Check the max size of each photo
                 if (photo.getSize() > MAX_PHOTO_SIZE) {
                     model.addAttribute("photoError",
                             "Each photo must be 5 MB or smaller.");
 
-                    deleteUploadedFiles(savedImagePaths);
+                    deleteCloudinaryImages(uploadedPublicIds);
                     return "create-listing";
                 }
 
-                // Generate a unique filename
-                String fileName = UUID.randomUUID() + extension;
+                // Upload the photo to Cloudinary
+                Map<?, ?> uploadResult = cloudinary.uploader().upload(
+                        photo.getBytes(),
+                        ObjectUtils.asMap(
+                                "folder", "sfu-marketplace/listings"
+                        )
+                );
 
-                Path filePath = uploadPath.resolve(fileName);
+                // Get the permanent image URL and Cloudinary public ID
+                String secureUrl =
+                        (String) uploadResult.get("secure_url");
 
-                // Save the uploaded photo
-                try (var inputStream = photo.getInputStream()) {
-                    Files.copy(inputStream, filePath,
-                            StandardCopyOption.REPLACE_EXISTING);
-                }
+                String publicId =
+                        (String) uploadResult.get("public_id");
 
-                // Store the image path for the database
-                savedImagePaths.add("/uploads/listings/" + fileName);
+                // Store the URL and public ID for later use
+                savedImagePaths.add(secureUrl);
+                uploadedPublicIds.add(publicId);
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
 
-            System.out.println("PHOTO UPLOAD ERROR: " + e.getMessage());
+            System.out.println("CLOUDINARY PHOTO UPLOAD ERROR:");
+            e.printStackTrace();
 
-            deleteUploadedFiles(savedImagePaths);
+            // Remove photos already uploaded if an error occurs
+            deleteCloudinaryImages(uploadedPublicIds);
 
             model.addAttribute("photoError",
                     "There was a problem uploading your photos. Please try again.");
@@ -208,14 +214,12 @@ public class ListingController {
         try {
             // Connect the listing to its seller
             listing.setSeller(account);
-
-            // Save the listing in PostgreSQL
             Listing savedListing = listingRepository.save(listing);
 
             System.out.println("LISTING SAVED WITH ID: "
                     + savedListing.getListingId());
 
-            // Save each photo and connect it to the listing
+            // Save each Cloudinary image URL and connect it to the listing
             for (String imagePath : savedImagePaths) {
 
                 ListingPhoto listingPhoto = new ListingPhoto();
@@ -226,7 +230,7 @@ public class ListingController {
                 listingPhotoRepository.save(listingPhoto);
             }
 
-            // Add the listing ID to the seller's account
+
             account.addListingId(savedListing.getListingId());
             accountRepository.save(account);
 
@@ -240,8 +244,8 @@ public class ListingController {
             System.out.println("LISTING SAVE ERROR:");
             e.printStackTrace();
 
-            // Clean up uploaded files if saving fails
-            deleteUploadedFiles(savedImagePaths);
+            // Remove Cloudinary photos if saving the listing fails
+            deleteCloudinaryImages(uploadedPublicIds);
 
             model.addAttribute("photoError",
                     "The listing could not be saved. Please try again.");
@@ -250,26 +254,74 @@ public class ListingController {
         }
     }
 
-    // Deletes uploaded files if an error occurs
-    private void deleteUploadedFiles(List<String> imagePaths) {
+    // Deletes a listing if the user is its owner or an admin
+    @Transactional
+    @PostMapping("/listings/{id}/delete")
+    public String deleteListing(
+            @PathVariable int id, HttpSession session) {
 
-        for (String imagePath : imagePaths) {
+        Account sessionAccount =
+                (Account) session.getAttribute("session_account");
 
-            // Extract the filename from the image path
-            String fileName = imagePath.substring(
-                    imagePath.lastIndexOf("/") + 1);
+        if (sessionAccount == null) {
+            return "redirect:/login";
+        }
 
+        // Fetch account from the database
+        Account account = accountRepository.findById(
+                sessionAccount.getAccountId()).orElse(null);
+
+        if (account == null) {
+            return "redirect:/login";
+        }
+
+        Listing listing = listingRepository.findById(id).orElse(null);
+
+        if (listing == null) {
+            return "redirect:/listings";
+        }
+
+        boolean isAdmin = account.getRole() == AccountRole.ADMIN;
+        boolean isOwner = account.getListingIds().contains(id);
+
+        if (!isAdmin && !isOwner) {
+            return "redirect:/listings";
+        }
+
+        // Remove the listing ID from the owner's account
+        // This prevents ghost listings
+        List<Account> accounts = accountRepository.findAll();
+
+        for (Account a : accounts) {
+            if (a.getListingIds().contains(id)) {
+                a.removeListingId(id);
+                accountRepository.save(a);
+            }
+        }
+
+        // Delete all messages associated with this listing
+        messageRepository.deleteByListing_ListingId(id);
+
+        // Delete the listing
+        listingRepository.delete(listing);
+
+        return "redirect:/listings";
+    }
+
+    // Deletes uploaded Cloudinary photos if an error occurs
+    private void deleteCloudinaryImages(List<String> publicIds) {
+
+        for (String publicId : publicIds) {
             try {
-                Path filePath = Paths.get(UPLOAD_DIRECTORY)
-                        .toAbsolutePath()
-                        .normalize()
-                        .resolve(fileName);
+                cloudinary.uploader().destroy(
+                        publicId,
+                        ObjectUtils.emptyMap()
+                );
 
-                Files.deleteIfExists(filePath);
-
-            } catch (IOException e) {
-                System.out.println("Could not delete uploaded file: "
-                        + fileName);
+            } catch (Exception e) {
+                System.out.println(
+                        "Could not delete Cloudinary photo: " + publicId
+                );
             }
         }
     }
