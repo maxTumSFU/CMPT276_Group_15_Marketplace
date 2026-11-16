@@ -101,15 +101,19 @@ public String login( @RequestParam Map<String, String> formData, Model model, Ht
     List<Account> accounts = accountRepository.findByEmail(email);
 
     if (accounts.isEmpty()) {
-        return "login";
-    }
+   
+    model.addAttribute("error", "Email not found.");
+    return "login";
+}
 
     Account account = accounts.get(0);
 
     //check submitted password with hash
     if (!passwordEncoder.matches(password, account.getPassword())) {
-        return "login";
-    } else {
+  
+    model.addAttribute("error", "Incorrect password.");
+    return "login";
+} else {
         //login successful
         request.getSession().setAttribute("session_account", account);
 
@@ -119,6 +123,7 @@ public String login( @RequestParam Map<String, String> formData, Model model, Ht
         response.setHeader("Expires", "0");
 
         model.addAttribute("account", account);
+
 
         return "redirect:/listings";
     }

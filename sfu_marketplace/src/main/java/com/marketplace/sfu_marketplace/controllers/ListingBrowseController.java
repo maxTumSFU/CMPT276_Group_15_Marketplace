@@ -1,5 +1,5 @@
 package com.marketplace.sfu_marketplace.controllers;
-
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,15 +9,21 @@ import com.marketplace.sfu_marketplace.models.ListingStatus;
 import org.springframework.ui.Model;
 import java.util.List;
 import com.marketplace.sfu_marketplace.models.Account;
+import com.marketplace.sfu_marketplace.repositories.AccountRepository;
 import jakarta.servlet.http.HttpSession;
 
 @Controller 
 public class ListingBrowseController {
     
     private final ListingRepository listingRepo;
+    private final AccountRepository accountRepo;
 
-    public ListingBrowseController(ListingRepository listingRepo) {
+    public ListingBrowseController(
+        ListingRepository listingRepo,
+        AccountRepository accountRepo) {
+
         this.listingRepo = listingRepo;
+        this.accountRepo = accountRepo;
     }
 
     // Shows the listings page
@@ -28,26 +34,44 @@ public class ListingBrowseController {
         return "listings-page";
     }
 
+
+  
     // Shows a specific listing
- @GetMapping("/listings/{id}")
-public String showListing(
-        @PathVariable("id") int id,
-        Model model,
-        HttpSession session) {
+    @GetMapping("/listings/{id}")
+    @Transactional(readOnly = true)
+    public String showListing(
+            @PathVariable("id") int id,
+            Model model,
+            HttpSession session) {
 
-    Listing listing = listingRepo.findById(id).orElse(null);
+        Listing listing = listingRepo.findById(id).orElse(null);
 
-    if (listing == null) {
-        return "redirect:/listings";
+        if (listing == null) {
+            return "redirect:/listings";
+        }
+
+        boolean isFavourite = false;
+
+        Account sessionAccount =
+                (Account) session.getAttribute("session_account");
+
+        if (sessionAccount != null) {
+            Account account = accountRepo
+                    .findById(sessionAccount.getAccountId())
+                    .orElse(null);
+
+            if (account != null) {
+                isFavourite = account.getFavourites()
+                        .stream()
+                        .anyMatch(fav -> fav.getListingId() == id);
+            }
+        }
+
+        model.addAttribute("isFavourite", isFavourite);
+        model.addAttribute("listing", listing);
+        model.addAttribute("sessionAccount", sessionAccount);
+
+        return "listing-detail";
     }
 
-    // Gets the currently logged-in account, if there is one
-    Account sessionAccount =
-            (Account) session.getAttribute("session_account");
-
-    model.addAttribute("listing", listing);
-    model.addAttribute("sessionAccount", sessionAccount);
-
-    return "listing-detail";
-}
 }

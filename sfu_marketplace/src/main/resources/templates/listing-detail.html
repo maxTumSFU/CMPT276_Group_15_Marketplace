@@ -108,6 +108,22 @@
 
     </section>
 
+
+    <!-- Save or remove listing from favourites -->
+    <form th:if="${sessionAccount != null and !isFavourite}"
+          th:action="@{/favourites/add/{id}(id=${listing.listingId})}"
+          method="post">
+
+        <button type="submit">♡ Save to Favourites</button>
+    </form>
+
+    <form th:if="${sessionAccount != null and isFavourite}"
+          th:action="@{/favourites/remove/{id}(id=${listing.listingId})}"
+          method="post">
+
+        <button type="submit">♥ Remove Favourite</button>
+    </form>
+
     <!-- Show Message Seller to logged-in buyers who are not the seller -->
     <div th:if="${sessionAccount != null
             and sessionAccount.accountId != listing.seller.accountId}">
@@ -252,6 +268,7 @@
         });
 
     </script>
+
 
 </body>
 </html>
