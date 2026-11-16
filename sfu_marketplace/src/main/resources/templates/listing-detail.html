@@ -110,18 +110,18 @@
 
 
     <!-- Save or remove listing from favourites -->
-    <form th:if="${sessionAccount != null and !isFavourite}"
-          th:action="@{/favourites/add/{id}(id=${listing.listingId})}"
-          method="post">
+    <form id="favourite-form"
+        th:if="${sessionAccount != null}"
+        th:action="@{/favourites/{id}/state(id=${listing.listingId})}"
+        method="post">
 
-        <button type="submit">♡ Save to Favourites</button>
-    </form>
+        <button type="submit"
+                id="favourite-button"
+                th:attr="aria-pressed=${isFavourite}"
+                th:text="${isFavourite ? '♥ Saved' : '♡ Save to Favourites'}">
+        </button>
 
-    <form th:if="${sessionAccount != null and isFavourite}"
-          th:action="@{/favourites/remove/{id}(id=${listing.listingId})}"
-          method="post">
-
-        <button type="submit">♥ Remove Favourite</button>
+        <p id="favourite-message" role="status"></p>
     </form>
 
     <!-- Show Message Seller to logged-in buyers who are not the seller -->
@@ -269,6 +269,59 @@
 
     </script>
 
+    <script>
+    const favouriteForm = document.getElementById("favourite-form");
+
+    if (favouriteForm) {
+        const button = document.getElementById("favourite-button");
+        const message = document.getElementById("favourite-message");
+
+        favouriteForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            if (button.disabled) return;
+
+            const shouldSave = button.getAttribute("aria-pressed") !== "true";
+            const data = new FormData(favouriteForm);
+            data.set("saved", String(shouldSave));
+
+            button.disabled = true;
+            message.textContent = "";
+
+            try {
+                const response = await fetch(favouriteForm.action, {
+                    method: "POST",
+                    body: data,
+                    headers: { "Accept": "application/json" }
+                });
+
+                if (response.status === 401 || response.redirected) {
+                    message.textContent = "Please log in again to save listings.";
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error("Request failed");
+                }
+
+                const result = await response.json();
+
+                button.setAttribute("aria-pressed", String(result.saved));
+                button.textContent = result.saved
+                    ? "♥ Saved"
+                    : "♡ Save to Favourites";
+
+                message.textContent = result.saved
+                    ? "Added to your favourites."
+                    : "Removed from your favourites.";
+            } catch (error) {
+                message.textContent = "Could not update favourites. Please try again.";
+            } finally {
+                button.disabled = false;
+            }
+        });
+    }
+</script>
     <!-- delete lsiting button -->
     <form th:if="${sessionAccount != null and sessionAccount.role.name() == 'ADMIN'}"
         th:action="@{/listings/{id}/delete(id=${listing.listingId})}"
